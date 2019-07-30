@@ -16,7 +16,7 @@ public class NoteController {
     NoteDao noteDao;
 
     @PostMapping
-    public Note addNote(Note note) {
+    public Note addNote(@RequestBody Note note) {
         return noteDao.addNote(note);
     }
 
