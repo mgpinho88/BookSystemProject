@@ -7,7 +7,9 @@ import com.company.BookStoreService.model.NoteViewModel;
 import com.company.BookStoreService.util.fiegn.NoteClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Component
@@ -29,50 +31,99 @@ public class ServiceLayer {
 //--------------------------------------------------//
 
 //--Book Methods------------------------------------//
+    @Transactional
     public BookViewModel addBook(BookViewModel bvm) {
-        return null;
+
+        Book book = buildBook(bvm);
+
+        List<NoteViewModel> notes = bvm.getNotes();
+
+        book = bdao.addBook(book);
+
+        if (notes.size() > 0) {
+
+            for (NoteViewModel note : notes) {
+                note.setBookId(book.getId());
+                note = client.addNote(note);
+            }
+        }
+
+        bvm.setNotes(notes);
+
+        bvm.setId(book.getId());
+
+        return bvm;
     }
 
     public BookViewModel getBook(int id) {
-        return null;
+
+        BookViewModel bookViewModel = buildBookViewModel(bdao.getBook(id));
+
+        bookViewModel.setNotes(client.getAllNotesByBook(id));
+
+        return bookViewModel;
     }
 
     public List<BookViewModel> getAllBooks() {
-        return null;
+
+        List<BookViewModel> bvmList = new ArrayList<>();
+
+        List<Book> books = bdao.getAllBooks();
+
+        for (Book book : books) {
+            BookViewModel bookViewModel = buildBookViewModel(book);
+            bookViewModel.setNotes(client.getAllNotesByBook(book.getId()));
+
+            bvmList.add(bookViewModel);
+        }
+
+        return bvmList;
     }
 
     public void updateBook(BookViewModel bvm) {
 
+        Book book = buildBook(bvm);
+
+        bdao.updateBook(book);
+
     }
 
+    @Transactional
     public void deleteBook(int id) {
 
+        List<NoteViewModel> notes = client.getAllNotesByBook(id);
+
+        for (NoteViewModel note : notes) {
+            client.deleteNote(note.getId());
+        }
+
+        bdao.deleteBook(id);
     }
 //--------------------------------------------------//
 
 //--Note Methods------------------------------------//
     public NoteViewModel addNote(NoteViewModel nvm) {
-        return null;
+        return client.addNote(nvm);
     }
 
     public NoteViewModel getNote(int id) {
-        return null;
+        return client.getNote(id);
     }
 
     public List<NoteViewModel> getAllNotes() {
-        return null;
+        return client.getAllNotes();
     }
 
     public List<NoteViewModel> getNotesByBook (int bookId) {
-        return null;
+        return client.getAllNotesByBook(bookId);
     }
 
-    public void updateNote(NoteViewModel nvm) {
-
+    public void updateNote(int noteID, NoteViewModel nvm) {
+        client.updateNote(noteID, nvm);
     }
 
     public void deleteNote(int id) {
-
+        client.deleteNote(id);
     }
 //--------------------------------------------------//
 

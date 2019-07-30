@@ -1,6 +1,8 @@
 package com.company.BookStoreService.controller;
 
-import com.company.BookStoreService.model.Book;
+import com.company.BookStoreService.model.BookViewModel;
+import com.company.BookStoreService.service.ServiceLayer;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -12,51 +14,49 @@ import java.util.List;
 @RequestMapping("/books") //Mapping to the "book" URI
 public class BookController {
 
+    @Autowired
+    ServiceLayer service;
+
     //Add a book to the database
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public Book addBook(@RequestBody Book book) {
-        //Body of the addBook Method
-
-        //Return an object
-        return null;
+    public BookViewModel addBook(@RequestBody BookViewModel book) {
+        return service.addBook(book);
     }
 
     //Find a book when given an ID
     @GetMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Book getBookById(@PathVariable("id") int bookId) {
-        //Body of the getBookById Method
-
-        //Return and object
-        return null;
+    public BookViewModel getBookById(@PathVariable("id") int bookId) {
+        return service.getBook(bookId);
     }
 
     //Get all books
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<Book> getAllBooks() {
-        //Body of the getAllBooks Method
-
-        //Return a list of objects
-        return null;
+    public List<BookViewModel> getAllBooks() {
+        return service.getAllBooks();
     }
 
     //Update a book
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void updateBook(@PathVariable("id") int bookId, @RequestBody Book book) {
-        //Body of the updateBook method
+    public void updateBook(@PathVariable("id") int bookId, @RequestBody BookViewModel book) {
 
-        //No return type for update
+        if (book.getId() == 0) {
+            book.setId(bookId);
+        }
+        if (bookId != book.getId()) {
+            throw new IllegalArgumentException("Book ID in path does not match the Book ID in the request.");
+        }
+
+        service.updateBook(book);
     }
 
     //Delete a book
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteBook(@PathVariable("id") int bookId) {
-        //Body of deleteBook method
-
-        //No return type
+        service.deleteBook(bookId);
     }
 }
