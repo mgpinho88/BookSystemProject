@@ -51,6 +51,6 @@ public class NoteController {
     @DeleteMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void deleteNote(@PathVariable("id") int noteId) {
-        
+
     }
 }
