@@ -9,8 +9,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import java.util.List;
 
-@FeignClient(name = "note-service")
-//Name of the file we are in our Git Repository that the service will communicate with
+@FeignClient(name = "note-service")//Name of the file we are in our Git Repository that the service will communicate with
 public interface NoteClient {
 
     //Create a note

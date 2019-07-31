@@ -3,8 +3,10 @@ package com.company.BookStoreService.service;
 import com.company.BookStoreService.dao.BookDao;
 import com.company.BookStoreService.model.Book;
 import com.company.BookStoreService.model.BookViewModel;
+import com.company.BookStoreService.util.message.Note;
 import com.company.BookStoreService.model.NoteViewModel;
 import com.company.BookStoreService.util.fiegn.NoteClient;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,10 +25,19 @@ public class ServiceLayer {
     @Autowired
     private NoteClient client;
 
+    //Setup the Queue Producer ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+    public static final String EXCHANGE = "note-exchange";
+    public static final String ROUTING_KEY = "note.requests.from.service";
+
+    @Autowired
+    private RabbitTemplate rabbit;
+    //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
     //Instantiate the DAO and Client
-    public ServiceLayer(BookDao bdao, NoteClient client) {
+    public ServiceLayer(BookDao bdao, NoteClient client, RabbitTemplate rabbit) {
         this.bdao = bdao;
         this.client = client;
+        this.rabbit = rabbit;
     }
 //--------------------------------------------------//
 
@@ -40,17 +51,25 @@ public class ServiceLayer {
 
         book = bdao.addBook(book);
 
+        //List<NoteViewModel> notes2 = new ArrayList<>();
+
+        Note msg;
+
         if (notes.size() > 0) {
 
             for (NoteViewModel note : notes) {
                 note.setBookId(book.getId());
-                note = client.addNote(note);
+
+                msg = buildNoteMessage(note);
+
+                rabbit.convertAndSend(EXCHANGE, ROUTING_KEY, msg);
+
             }
         }
 
-        bvm.setNotes(notes);
-
         bvm.setId(book.getId());
+
+        bvm.setNotes(client.getAllNotesByBook(bvm.getId()));
 
         return bvm;
     }
@@ -84,6 +103,7 @@ public class ServiceLayer {
 
         Book book = buildBook(bvm);
 
+
         bdao.updateBook(book);
 
     }
@@ -94,7 +114,8 @@ public class ServiceLayer {
         List<NoteViewModel> notes = client.getAllNotesByBook(id);
 
         for (NoteViewModel note : notes) {
-            client.deleteNote(note.getId());
+            client.deleteNote(note.getNoteId());
+
         }
 
         bdao.deleteBook(id);
@@ -102,8 +123,15 @@ public class ServiceLayer {
 //--------------------------------------------------//
 
 //--Note Methods------------------------------------//
-    public NoteViewModel addNote(NoteViewModel nvm) {
-        return client.addNote(nvm);
+    public List<NoteViewModel> addNote(NoteViewModel nvm) {
+
+        Note msg = buildNoteMessage(nvm);
+        rabbit.convertAndSend(EXCHANGE, ROUTING_KEY, msg);
+
+        int bookId = nvm.getBookId();
+
+        List<NoteViewModel> notes = client.getAllNotesByBook(bookId);
+        return notes;
     }
 
     public NoteViewModel getNote(int id) {
@@ -119,7 +147,8 @@ public class ServiceLayer {
     }
 
     public void updateNote(int noteID, NoteViewModel nvm) {
-        client.updateNote(noteID, nvm);
+        Note msg = buildNoteMessage(nvm);
+        rabbit.convertAndSend(EXCHANGE, ROUTING_KEY, msg);
     }
 
     public void deleteNote(int id) {
@@ -158,6 +187,20 @@ public class ServiceLayer {
 
 
         return book;
+    }
+//--------------------------------------------------//
+
+//--NoteViewModel to message-----------------------//
+    private Note buildNoteMessage(NoteViewModel note) {
+
+        //Instantiate a Book View Model
+        Note msg = new Note(
+                note.getNoteId(),
+                note.getBookId(),
+                note.getNote());
+
+        //Return a Book View Model
+        return msg;
     }
 //--------------------------------------------------//
 }
