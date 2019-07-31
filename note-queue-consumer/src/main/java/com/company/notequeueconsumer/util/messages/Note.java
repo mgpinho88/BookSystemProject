@@ -1,4 +1,4 @@
-package com.company.notequeueconsumer.notequeueconsumer.util.messages;
+package com.company.notequeueconsumer.util.messages;
 
 public class Note {
 
