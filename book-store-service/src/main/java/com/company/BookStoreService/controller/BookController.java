@@ -3,7 +3,6 @@ package com.company.BookStoreService.controller;
 import com.company.BookStoreService.model.BookViewModel;
 import com.company.BookStoreService.model.NoteViewModel;
 import com.company.BookStoreService.service.ServiceLayer;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.http.HttpStatus;
@@ -13,20 +12,10 @@ import java.util.List;
 
 @RestController
 @RefreshScope
-//@RequestMapping("/books") //Mapping to the "book" URI
 public class BookController {
 
     @Autowired
     ServiceLayer service;
-
-    RabbitTemplate rabbit;
-
-    private String EXCHANGE = "notes-queue";
-    private String ADD_ROUTING_KEYS = "note.list.add";
-    private String GET_ROUTING_KEYS;
-    private String UPDATE_ROUTING_KEYS;
-    private String DELETE_ROUNTING_KEYS;
-
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Books~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -78,7 +67,7 @@ public class BookController {
     //Create a new note
     @RequestMapping(value = "/notes", method = RequestMethod.POST)
     @ResponseStatus(HttpStatus.CREATED)
-    public NoteViewModel addNote(@RequestBody NoteViewModel note) {
+    public List<NoteViewModel> addNote(@RequestBody NoteViewModel note) {
         return service.addNote(note);
     }
 
