@@ -11,7 +11,7 @@ import java.util.List;
 
 @RestController
 @RefreshScope
-@RequestMapping("/notes") //Mapping to the "book" URI
+@RequestMapping("/notes") //Mapping to the "note" URI
 public class NoteController {
 
     @Autowired
@@ -32,7 +32,7 @@ public class NoteController {
     }
 
     //Get all notes by book
-    @GetMapping("/book/book_id")
+    @GetMapping("/book/{book_id}")
     @ResponseStatus(HttpStatus.OK)
     public List<NoteViewModel> getNotesByBook(@PathVariable("book_id") int bookId) {
         return service.getNotesByBook(bookId);
@@ -49,10 +49,10 @@ public class NoteController {
     @PutMapping(value = "/{id}")
     @ResponseStatus(HttpStatus.OK)
     public void updateNote(@PathVariable("id") int noteId, NoteViewModel note) {
-        if (note.getId() == 0) {
-            note.setId(noteId);
+        if (note.getNoteId() == 0) {
+            note.setBookId(noteId);
         }
-        if (note.getId() != noteId) {
+        if (note.getNoteId() != noteId) {
             throw new IllegalArgumentException("Note ID in the path does not match the Note ID in the request");
         }
 

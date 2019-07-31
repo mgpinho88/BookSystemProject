@@ -40,15 +40,19 @@ public class ServiceLayer {
 
         book = bdao.addBook(book);
 
+        List<NoteViewModel> notes2 = new ArrayList<>();
+
         if (notes.size() > 0) {
 
             for (NoteViewModel note : notes) {
                 note.setBookId(book.getId());
-                note = client.addNote(note);
+
+                notes2.add(client.addNote(note));
+
             }
         }
 
-        bvm.setNotes(notes);
+        bvm.setNotes(notes2);
 
         bvm.setId(book.getId());
 
@@ -94,7 +98,7 @@ public class ServiceLayer {
         List<NoteViewModel> notes = client.getAllNotesByBook(id);
 
         for (NoteViewModel note : notes) {
-            client.deleteNote(note.getId());
+            client.deleteNote(note.getNoteId());
         }
 
         bdao.deleteBook(id);

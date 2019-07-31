@@ -4,18 +4,18 @@ import java.util.Objects;
 
 public class NoteViewModel {
     //--States------------------------------------------//
-    private int id;
+    private int noteId;
     private int bookId;
     private String note;
 //--------------------------------------------------//
 
 //--Getters and Setters-----------------------------//
-    public int getId() {
-        return id;
+    public int getNoteId() {
+        return noteId;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setNoteId(int noteId) {
+        this.noteId = noteId;
     }
 
     public int getBookId() {
@@ -41,14 +41,14 @@ public class NoteViewModel {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         NoteViewModel that = (NoteViewModel) o;
-        return id == that.id &&
+        return noteId == that.noteId &&
                 bookId == that.bookId &&
                 note.equals(that.note);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, bookId, note);
+        return Objects.hash(noteId, bookId, note);
     }
 //--------------------------------------------------//
 
